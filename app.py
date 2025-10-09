@@ -32,9 +32,11 @@ st.header("enter your code")
 with st.sidebar:
     option = st.selectbox(
         "What would you like to work ? ",
-        ["Basic select",
-        "Basic Joins",
-        "Window function"],
+        [
+            "Basic select",
+            "Basic Joins",
+            "Window function"
+        ],
         0,
         placeholder="Select something"
     )
@@ -57,4 +59,5 @@ with tab1:
 
 with tab2:
     st.write(answer)
+
 
