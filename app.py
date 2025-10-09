@@ -1,33 +1,48 @@
 import streamlit as st
 import pandas as pd
-import duckdb as db
-
+import duckdb
+import io
 st.write("Hello world")
 
+csv = """
+Beverage, prive
+orange juice, 2.5
+Espresso, 3
+Latte machiatto, 10
+tea, 5
+"""
+beverages = pd.read_csv(io.StringIO(csv))
 
+csv2 = """
+food_item, food_price
+cookie, 2.5
+donut, 4
+muffin, 5  
+"""
+food_item = pd.read_csv(io.StringIO(csv2))
 
-option = st.selectbox(
-    "What would you like to work ? ",
-    ["Basic select",
-     "Basic Joins",
-     "Window function"],
-    0,
-    placeholder="Select something"
-)
+answer = """
+SELECT *
+FROM beverages
+CROSS JOIN food_item
+"""
+solution = duckdb.sql(answer).df()
+st.header("enter your code")
 
-st.write('You chose to work on', option)
+query = st.text_area(label="Write your sql request", key="user_input")
+if query:
+    result = duckdb.sql(query).df()
+    st.write("Ton résultat")
+    st.dataframe(result)
+tab1, tab2 = st.tabs(["tables", "solution"])
 
-tab1, tab2 = st.tabs(["ma_table", "autre_table"])
+with tab1:
+    st.write("Table : boissons")
+    st.dataframe(beverages)
+    st.write("Table : aliments")
+    st.dataframe(food_item)
+    st.write("Expected :")
+    st.dataframe(solution)
 
-df = pd.DataFrame({'a': [1, 2, 3], 'b': [3, 4, 5]})
-# with tab1 :
-input_test = st.text_area(label="Entrez le texte")
-
-if input_test == "":
-    input_test = "SELECT * FROM df"
-
-st.dataframe(db.sql(input_test).df())
-
-with tab2 :
-    super_texte = st.text_area(label = "Entrez le texte")
-    st.write(super_texte)
+with tab2:
+    st.write(answer)
