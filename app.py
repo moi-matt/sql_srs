@@ -29,6 +29,19 @@ CROSS JOIN food_item
 solution = duckdb.sql(answer).df()
 st.header("enter your code")
 
+with st.sidebar:
+    option = st.selectbox(
+        "What would you like to work ? ",
+        [
+            "Basic select",
+            "Basic Joins",
+            "Window function"
+        ],
+        0,
+        placeholder="Select something"
+    )
+    st.write('You chose to work on', option)
+
 query = st.text_area(label="Write your sql request", key="user_input")
 if query:
     result = duckdb.sql(query).df()
@@ -46,3 +59,5 @@ with tab1:
 
 with tab2:
     st.write(answer)
+
+
