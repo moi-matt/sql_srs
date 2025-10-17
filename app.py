@@ -1,48 +1,49 @@
-import streamlit as st
-import pandas as pd
-import duckdb
+# pylint: disable=(missing-module-docstring)
 import io
+
+import duckdb
+import pandas as pd
+import streamlit as st
+
 st.write("Hello world")
 
-csv = """
+CSV = """
 beverage,price
 orange juice,2.5
 Espresso,3
 Latte machiatto,10
 tea,5
 """
-beverages = pd.read_csv(io.StringIO(csv))
+beverages = pd.read_csv(io.StringIO(CSV))
 
-csv2 = """
+CSV2 = """
 food_item,food_price
 cookie,2.5
 donut,4
 muffin,5  
 """
-food_item = pd.read_csv(io.StringIO(csv2))
+food_item = pd.read_csv(io.StringIO(CSV2))
 
-answer = """
+ANSWER = """
 SELECT *
 FROM beverages
 CROSS JOIN food_item
 """
-solution_df = duckdb.sql(answer).df()
+solution_df = duckdb.sql(ANSWER).df()
 st.header("enter your code")
 
 with st.sidebar:
     option = st.selectbox(
         "What would you like to work ? ",
-        [
-            "Basic select",
-            "Basic Joins",
-            "Window function"
-        ],
+        ["Basic select", "Basic Joins", "Window function"],
         0,
-        placeholder="Select something"
+        placeholder="Select something",
     )
-    st.write('You chose to work on', option)
+    st.write("You chose to work on", option)
 
-query = st.text_area(label="Write your sql request (cross joins between 2 tables)", key="user_input")
+query = st.text_area(
+    label="Write your sql request (cross joins between 2 tables)", key="user_input"
+)
 if query:
     result = duckdb.sql(query).df()
     st.write("Ton résultat")
@@ -55,8 +56,11 @@ if query:
     try:
         result = result[solution_df.columns]
         st.dataframe(result.compare(solution_df))
-    except KeyError as e:
-        st.write("Impossible de comparer ton résultat avec la solution_df car les colonnes n'ont pas le même nom")
+    except KeyError:
+        st.write(
+            "Impossible de comparer ton résultat avec la solution_df "
+            "car les colonnes n'ont pas le même nom"
+        )
 
 tab1, tab2 = st.tabs(["tables", "solution_df"])
 
@@ -69,4 +73,4 @@ with tab1:
     st.dataframe(solution_df)
 
 with tab2:
-    st.write(answer)
+    st.write(ANSWER)
