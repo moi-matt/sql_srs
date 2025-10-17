@@ -5,19 +5,19 @@ import io
 st.write("Hello world")
 
 csv = """
-Beverage, prive
-orange juice, 2.5
-Espresso, 3
-Latte machiatto, 10
-tea, 5
+beverage,price
+orange juice,2.5
+Espresso,3
+Latte machiatto,10
+tea,5
 """
 beverages = pd.read_csv(io.StringIO(csv))
 
 csv2 = """
-food_item, food_price
-cookie, 2.5
-donut, 4
-muffin, 5  
+food_item,food_price
+cookie,2.5
+donut,4
+muffin,5  
 """
 food_item = pd.read_csv(io.StringIO(csv2))
 
@@ -26,7 +26,7 @@ SELECT *
 FROM beverages
 CROSS JOIN food_item
 """
-solution = duckdb.sql(answer).df()
+solution_df = duckdb.sql(answer).df()
 st.header("enter your code")
 
 with st.sidebar:
@@ -42,12 +42,23 @@ with st.sidebar:
     )
     st.write('You chose to work on', option)
 
-query = st.text_area(label="Write your sql request", key="user_input")
+query = st.text_area(label="Write your sql request (cross joins between 2 tables)", key="user_input")
 if query:
     result = duckdb.sql(query).df()
     st.write("Ton résultat")
     st.dataframe(result)
-tab1, tab2 = st.tabs(["tables", "solution"])
+
+    # Comparaison du nombres de lignes et de colonnes dans le résultat
+    ncol_missing = result.shape[1] - solution_df.shape[1]
+    nrows_missing = result.shape[0] - solution_df.shape[0]
+
+    try:
+        result = result[solution_df.columns]
+        st.dataframe(result.compare(solution_df))
+    except KeyError as e:
+        st.write("Impossible de comparer ton résultat avec la solution_df car les colonnes n'ont pas le même nom")
+
+tab1, tab2 = st.tabs(["tables", "solution_df"])
 
 with tab1:
     st.write("Table : boissons")
@@ -55,9 +66,7 @@ with tab1:
     st.write("Table : aliments")
     st.dataframe(food_item)
     st.write("Expected :")
-    st.dataframe(solution)
+    st.dataframe(solution_df)
 
 with tab2:
     st.write(answer)
-
-
