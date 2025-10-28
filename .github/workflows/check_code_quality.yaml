@@ -8,8 +8,8 @@ jobs:
     - uses: actions/python
       with:
         python-version: 3.13
-    - run:
+    - run: |
         python -m pip install --upgrade pip
         pip install pylint
-    - run:
-        pylint app.py 
+    - run: |
+        pylint app.py
