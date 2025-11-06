@@ -24,10 +24,10 @@ with st.sidebar:
 query = st.text_area(
     label="Write your sql request (cross joins between 2 tables)", key="user_input"
 )
-# if query:
-#     result = duckdb.sql(query).df()
-#     st.write("Ton résultat")
-#     st.dataframe(result)
+if query:
+    result = con.execute(query).df()
+    st.write("Ton résultat")
+    st.dataframe(result)
 
 #     # Comparaison du nombres de lignes et de colonnes dans le résultat
 #     ncol_missing = result.shape[1] - solution_df.shape[1]
@@ -42,18 +42,12 @@ query = st.text_area(
 #             "car les colonnes n'ont pas le même nom"
 #         )
 
-# tab1, tab2 = st.tabs(["tables", "solution_df"])
 
-# with tab1:
-#     st.write("Table : boissons")
-#     st.dataframe(beverages)
-#     st.write("Table : aliments")
-#     st.dataframe(food_item)
-#     st.write("Expected :")
-#     st.dataframe(solution_df)
+tab1, tab2 = st.tabs(["Tables", "Solutions"])
 
-with tab2:
-    exercice_tables = ast.literal_eval(exercice.loc[0, "tables"])
-    for table in exercice_tables:
+with tab1:
+    exercise_tables = ast.literal_eval(exercise.loc[0, "tables"])
+    for table in exercise_tables:
         st.write(f'Table: {table}')
-        st.dataframe()
+        st.dataframe(con.execute(f"SELECT * FROM '{table}'").df())
+
