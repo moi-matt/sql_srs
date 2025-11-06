@@ -15,11 +15,20 @@ with st.sidebar:
     theme = st.selectbox(
         "What would you like to work ? ",
         ["cross_joins", "GroupBy", "window_functions"],
-        0,
+        None,
         placeholder="Select something",
     )
     exercise = con.execute(f"SELECT * FROM memory_state WHERE Theme='{theme}'").df()
     st.write(exercise)
+
+    # Récupération de la solution de l'exercice
+    try:
+        exercise_name = exercise.loc[0, "exercice_name"]
+    except KeyError:
+        st.write("Veuillez choisir le thème que vous voulez travailler")
+    with open(f"answer/{exercise_name}.sql") as f:
+        answer = f.read()
+    solution_df = con.execute(answer).df()
 
 query = st.text_area(
     label="Write your sql request (cross joins between 2 tables)", key="user_input"
@@ -29,18 +38,18 @@ if query:
     st.write("Ton résultat")
     st.dataframe(result)
 
-#     # Comparaison du nombres de lignes et de colonnes dans le résultat
-#     ncol_missing = result.shape[1] - solution_df.shape[1]
-#     nrows_missing = result.shape[0] - solution_df.shape[0]
+    # Comparaison du nombres de lignes et de colonnes dans le résultat
+    ncol_missing = result.shape[1] - solution_df.shape[1]
+    nrows_missing = result.shape[0] - solution_df.shape[0]
 
-#     try:
-#         result = result[solution_df.columns]
-#         st.dataframe(result.compare(solution_df))
-#     except KeyError:
-#         st.write(
-#             "Impossible de comparer ton résultat avec la solution_df "
-#             "car les colonnes n'ont pas le même nom"
-#         )
+    try:
+        result = result[solution_df.columns]
+        st.dataframe(result.compare(solution_df))
+    except KeyError:
+        st.write(
+            "Impossible de comparer ton résultat avec la solution_df "
+            "car les colonnes n'ont pas le même nom"
+        )
 
 
 tab1, tab2 = st.tabs(["Tables", "Solutions"])
@@ -52,7 +61,4 @@ with tab1:
         st.dataframe(con.execute(f"SELECT * FROM '{table}'").df())
 
 with tab2:
-    exercise_name = exercise.loc[0, "exercice_name"]
-    with open(f"answer/{exercise_name}.sql") as f:
-        answer = f.read()
     st.write(answer)
