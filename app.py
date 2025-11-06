@@ -1,6 +1,6 @@
 # pylint: disable=(missing-module-docstring)
 import io
-
+import ast
 import duckdb
 import pandas as pd
 import streamlit as st
@@ -52,5 +52,8 @@ query = st.text_area(
 #     st.write("Expected :")
 #     st.dataframe(solution_df)
 
-# with tab2:
-#     st.write(ANSWER)
+with tab2:
+    exercice_tables = ast.literal_eval(exercice.loc[0, "tables"])
+    for table in exercice_tables:
+        st.write(f'Table: {table}')
+        st.dataframe()
