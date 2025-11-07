@@ -4,6 +4,7 @@ import ast
 import duckdb
 import pandas as pd
 import streamlit as st
+from datetime import datetime as dt
 
 con = duckdb.connect(database="data/exercices_table_sql.duckdb", read_only=False)
 
@@ -18,17 +19,21 @@ with st.sidebar:
         None,
         placeholder="Select something",
     )
-    exercise = con.execute(f"SELECT * FROM memory_state WHERE Theme='{theme}'").df()
-    st.write(exercise)
+    exercise = con.execute(f"SELECT * FROM memory_state WHERE Theme='{theme}'").df().sort_values(by = "last_reviewed").reset_index().drop(columns = 'index')
+    # exercise["last_reviewed"] = pd.to_datetime(exercise['last_reviewed'])
 
+    #print(exercise.loc[exercise["last_reviewed"] == exercise["last_reviewed"].min(), "exercice_name"].values)
     # Récupération de la solution de l'exercice
     try:
-        exercise_name = exercise.loc[0, "exercice_name"]
+        st.dataframe(exercise)
+        exercise_name = exercise.loc[exercise["last_reviewed"] == exercise["last_reviewed"].min(), "exercice_name"].values[0]
+        with open(f"answer/{exercise_name}.sql") as f:
+            answer = f.read()
+        solution_df = con.execute(answer).df()
+
     except KeyError:
         st.write("Veuillez choisir le thème que vous voulez travailler")
-    with open(f"answer/{exercise_name}.sql") as f:
-        answer = f.read()
-    solution_df = con.execute(answer).df()
+    
 
 query = st.text_area(
     label="Write your sql request (cross joins between 2 tables)", key="user_input"
@@ -55,7 +60,7 @@ if query:
 tab1, tab2 = st.tabs(["Tables", "Solutions"])
 
 with tab1:
-    exercise_tables = ast.literal_eval(exercise.loc[0, "tables"])
+    exercise_tables = exercise.loc[0, "tables"]
     for table in exercise_tables:
         st.write(f'Table: {table}')
         st.dataframe(con.execute(f"SELECT * FROM '{table}'").df())
