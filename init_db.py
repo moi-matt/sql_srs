@@ -2,16 +2,16 @@ import io
 import pandas as pd
 import duckdb
 
-con = duckdb.connect(database="data/exercices_table_sql.duckdb", read_only= False)
+con = duckdb.connect(database="data/exercices_table_sql.duckdb", read_only=False)
 
 # ---------------------
 # Listes d'exercices
 # --------------------
 data = {
-    'theme': ['cross_joins', 'cross_joins', 'window_functions'],
-    'exercice_name': ['food_and_beverages', 'size_and_trademark', 'simple_window'],
-    'tables': [['beverages', 'food_item'], ['size', 'trademark'], ['window_table']],
-    'last_reviewed': ['2025-01-01', '1970-01-01', '1970-01-01'],
+    "theme": ["cross_joins", "cross_joins", "window_functions"],
+    "exercice_name": ["food_and_beverages", "size_and_trademark", "simple_window"],
+    "tables": [["beverages", "food_item"], ["size", "trademark"], ["window_table"]],
+    "last_reviewed": ["2025-01-01", "1970-01-01", "1970-01-01"],
 }
 memory_state_df = pd.DataFrame(data)
 con.execute("CREATE OR REPLACE TABLE memory_state AS SELECT * FROM memory_state_df")
