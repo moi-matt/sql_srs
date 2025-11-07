@@ -1,14 +1,23 @@
 # pylint: disable=(missing-module-docstring)
 import io
+import os
 import ast
+import logging
 import duckdb
 import pandas as pd
 import streamlit as st
 from datetime import datetime as dt
 
+if "data" not in os.listdir():
+    logging.error(os.listdir())
+    logging.error(("creating folder data"))
+    os.mkdir("data")
+
+if "exercices_table_sql.duckdb" not in os.listdir("data"):
+    exec(open("init_db.py").read())
+
+
 con = duckdb.connect(database="data/exercices_table_sql.duckdb", read_only=False)
-
-
 # solution_df = duckdb.sql(ANSWER).df()
 st.header("enter your code")
 
