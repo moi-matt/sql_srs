@@ -21,9 +21,10 @@ con = duckdb.connect(database="data/exercices_table_sql.duckdb", read_only=False
 st.header("enter your code")
 
 with st.sidebar:
+    available_theme = con.execute("SELECT DISTINCT theme FROM memory_state").df()
     theme = st.selectbox(
         "What would you like to work ? ",
-        ["cross_joins", "GroupBy", "window_functions"],
+        available_theme,
         None,
         placeholder="Select something",
     )
