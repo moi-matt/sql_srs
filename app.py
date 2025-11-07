@@ -18,7 +18,6 @@ if "exercices_table_sql.duckdb" not in os.listdir("data"):
 
 
 con = duckdb.connect(database="data/exercices_table_sql.duckdb", read_only=False)
-# solution_df = duckdb.sql(ANSWER).df()
 st.header("enter your code")
 
 with st.sidebar:
@@ -28,29 +27,27 @@ with st.sidebar:
         None,
         placeholder="Select something",
     )
+    if theme:
+        sql_query_exercise = f"SELECT * FROM memory_state WHERE Theme='{theme}'"
+    else:
+        sql_query_exercise = "SELECT * FROM memory_state"
+    
     exercise = (
-        con.execute(f"SELECT * FROM memory_state WHERE Theme='{theme}'")
+        con.execute(sql_query_exercise)
         .df()
         .sort_values(by="last_reviewed")
         .reset_index()
         .drop(columns="index")
-    )
-    # exercise["last_reviewed"] = pd.to_datetime(exercise['last_reviewed'])
-
-    # print(exercise.loc[exercise["last_reviewed"] == exercise["last_reviewed"].min(), "exercice_name"].values)
-    # Récupération de la solution de l'exercice
-    try:
-        st.dataframe(exercise)
-        exercise_name = exercise.loc[
-            exercise["last_reviewed"] == exercise["last_reviewed"].min(),
-            "exercice_name",
+        )
+    st.dataframe(exercise)
+    exercise_name = exercise.loc[
+        exercise["last_reviewed"] == exercise["last_reviewed"].min(),
+        "exercice_name",
         ].values[0]
-        with open(f"answer/{exercise_name}.sql") as f:
-            answer = f.read()
-        solution_df = con.execute(answer).df()
-
-    except KeyError:
-        st.write("Veuillez choisir le thème que vous voulez travailler")
+    
+    with open(f"answer/{exercise_name}.sql") as f:
+        answer = f.read()
+    solution_df = con.execute(answer).df()
 
 
 query = st.text_area(
@@ -78,10 +75,13 @@ if query:
 tab1, tab2 = st.tabs(["Tables", "Solutions"])
 
 with tab1:
+
     exercise_tables = exercise.loc[0, "tables"]
     for table in exercise_tables:
         st.write(f"Table: {table}")
         st.dataframe(con.execute(f"SELECT * FROM '{table}'").df())
+   
+    
 
 with tab2:
     st.write(answer)
