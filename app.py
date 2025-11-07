@@ -1,51 +1,54 @@
 # pylint: disable=(missing-module-docstring)
 import io
-
+import ast
 import duckdb
 import pandas as pd
 import streamlit as st
+from datetime import datetime as dt
 
-st.write("Hello world")
+con = duckdb.connect(database="data/exercices_table_sql.duckdb", read_only=False)
 
-CSV = """
-beverage,price
-orange juice,2.5
-Espresso,3
-Latte machiatto,10
-tea,5
-"""
-beverages = pd.read_csv(io.StringIO(CSV))
 
-CSV2 = """
-food_item,food_price
-cookie,2.5
-donut,4
-muffin,5  
-"""
-food_item = pd.read_csv(io.StringIO(CSV2))
-
-ANSWER = """
-SELECT *
-FROM beverages
-CROSS JOIN food_item
-"""
-solution_df = duckdb.sql(ANSWER).df()
+# solution_df = duckdb.sql(ANSWER).df()
 st.header("enter your code")
 
 with st.sidebar:
-    option = st.selectbox(
+    theme = st.selectbox(
         "What would you like to work ? ",
-        ["Basic select", "Basic Joins", "Window function"],
-        0,
+        ["cross_joins", "GroupBy", "window_functions"],
+        None,
         placeholder="Select something",
     )
-    st.write("You chose to work on", option)
+    exercise = (
+        con.execute(f"SELECT * FROM memory_state WHERE Theme='{theme}'")
+        .df()
+        .sort_values(by="last_reviewed")
+        .reset_index()
+        .drop(columns="index")
+    )
+    # exercise["last_reviewed"] = pd.to_datetime(exercise['last_reviewed'])
+
+    # print(exercise.loc[exercise["last_reviewed"] == exercise["last_reviewed"].min(), "exercice_name"].values)
+    # Récupération de la solution de l'exercice
+    try:
+        st.dataframe(exercise)
+        exercise_name = exercise.loc[
+            exercise["last_reviewed"] == exercise["last_reviewed"].min(),
+            "exercice_name",
+        ].values[0]
+        with open(f"answer/{exercise_name}.sql") as f:
+            answer = f.read()
+        solution_df = con.execute(answer).df()
+
+    except KeyError:
+        st.write("Veuillez choisir le thème que vous voulez travailler")
+
 
 query = st.text_area(
     label="Write your sql request (cross joins between 2 tables)", key="user_input"
 )
 if query:
-    result = duckdb.sql(query).df()
+    result = con.execute(query).df()
     st.write("Ton résultat")
     st.dataframe(result)
 
@@ -62,15 +65,14 @@ if query:
             "car les colonnes n'ont pas le même nom"
         )
 
-tab1, tab2 = st.tabs(["tables", "solution_df"])
+
+tab1, tab2 = st.tabs(["Tables", "Solutions"])
 
 with tab1:
-    st.write("Table : boissons")
-    st.dataframe(beverages)
-    st.write("Table : aliments")
-    st.dataframe(food_item)
-    st.write("Expected :")
-    st.dataframe(solution_df)
+    exercise_tables = exercise.loc[0, "tables"]
+    for table in exercise_tables:
+        st.write(f"Table: {table}")
+        st.dataframe(con.execute(f"SELECT * FROM '{table}'").df())
 
 with tab2:
-    st.write(ANSWER)
+    st.write(answer)
