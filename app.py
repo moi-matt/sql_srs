@@ -19,21 +19,30 @@ with st.sidebar:
         None,
         placeholder="Select something",
     )
-    exercise = con.execute(f"SELECT * FROM memory_state WHERE Theme='{theme}'").df().sort_values(by = "last_reviewed").reset_index().drop(columns = 'index')
+    exercise = (
+        con.execute(f"SELECT * FROM memory_state WHERE Theme='{theme}'")
+        .df()
+        .sort_values(by="last_reviewed")
+        .reset_index()
+        .drop(columns="index")
+    )
     # exercise["last_reviewed"] = pd.to_datetime(exercise['last_reviewed'])
 
-    #print(exercise.loc[exercise["last_reviewed"] == exercise["last_reviewed"].min(), "exercice_name"].values)
+    # print(exercise.loc[exercise["last_reviewed"] == exercise["last_reviewed"].min(), "exercice_name"].values)
     # Récupération de la solution de l'exercice
     try:
         st.dataframe(exercise)
-        exercise_name = exercise.loc[exercise["last_reviewed"] == exercise["last_reviewed"].min(), "exercice_name"].values[0]
+        exercise_name = exercise.loc[
+            exercise["last_reviewed"] == exercise["last_reviewed"].min(),
+            "exercice_name",
+        ].values[0]
         with open(f"answer/{exercise_name}.sql") as f:
             answer = f.read()
         solution_df = con.execute(answer).df()
 
     except KeyError:
         st.write("Veuillez choisir le thème que vous voulez travailler")
-    
+
 
 query = st.text_area(
     label="Write your sql request (cross joins between 2 tables)", key="user_input"
@@ -62,7 +71,7 @@ tab1, tab2 = st.tabs(["Tables", "Solutions"])
 with tab1:
     exercise_tables = exercise.loc[0, "tables"]
     for table in exercise_tables:
-        st.write(f'Table: {table}')
+        st.write(f"Table: {table}")
         st.dataframe(con.execute(f"SELECT * FROM '{table}'").df())
 
 with tab2:
